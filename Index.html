@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antibiotic Resistance Simulation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        #output {
+            white-space: pre-wrap;
+            background: #222;
+            color: #0f0;
+            padding: 20px;
+            border-radius: 5px;
+            font-family: monospace;
+            height: 300px;
+            overflow-y: auto;
+        }
+        input {
+            padding: 10px;
+            font-size: 16px;
+            width: 100px;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 5px;
+            background: #007bff;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Antibiotic Resistance Simulation</h1>
+    <div id="output">Welcome to the Antibiotic Resistance Simulation!</div>
+    <p>Enter your choice: <input type="text" id="userInput" maxlength="1" oninput="handleInput()"></p>
+
+    <script>
+        const output = document.getElementById('output');
+        const inputField = document.getElementById('userInput');
+
+        let sensitiveBacteria = 100;
+        let resistantBacteria = 10;
+        let dosesTaken = 0;
+        let daysPassed = 0;
+        let gameOver = false;
+
+        function logMessage(message) {
+            output.textContent += `\n${message}`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function handleInput() {
+            const userInput = inputField.value.toLowerCase();
+            if (userInput === "t") {
+                takeDose();
+            } else if (userInput === "s") {
+                skipDose();
+            } else if (userInput === "d") {
+                doubleDose();
+            }
+            inputField.value = ''; // Reset input field after each turn
+        }
+
+        function takeDose() {
+            if (gameOver) return;
+            dosesTaken++;
+            sensitiveBacteria -= 30;
+            logMessage("You took a dose. Sensitive bacteria reduced.");
+            nextDay();
+        }
+
+        function skipDose() {
+            if (gameOver) return;
+            logMessage("You skipped a dose. Bacteria may grow unchecked!");
+            nextDay();
+        }
+
+        function doubleDose() {
+            if (gameOver) return;
+            dosesTaken += 2;
+            sensitiveBacteria -= 60;
+            logMessage("You double-dosed! Sensitive bacteria reduced significantly.");
+            nextDay();
+        }
+
+        function nextDay() {
+            if (gameOver) return;
+            daysPassed++;
+            sensitiveBacteria = Math.max(0, sensitiveBacteria + Math.floor(sensitiveBacteria * 0.2));
+            resistantBacteria = Math.max(0, resistantBacteria + Math.floor(resistantBacteria * 0.1));
+
+            if (Math.random() < 0.02) {
+                sensitiveBacteria -= 5;
+                resistantBacteria += 5;
+                logMessage("Mutation! Some sensitive bacteria became resistant.");
+            }
+
+            if (daysPassed >= 7 || (sensitiveBacteria === 0 && resistantBacteria === 0)) {
+                endGame();
+            } else {
+                logMessage(
+                    `Day ${daysPassed}: Sensitive bacteria: ${sensitiveBacteria}, Resistant bacteria: ${resistantBacteria}`
+                );
+            }
+        }
+
+        function endGame() {
+            gameOver = true;
+            if (sensitiveBacteria === 0 && resistantBacteria === 0) {
+                logMessage("Success! The infection is cured.");
+            } else if (resistantBacteria / (sensitiveBacteria + resistantBacteria) > 0.5) {
+                logMessage("Failure! Resistance dominates.");
+            } else {
+                logMessage("Partial success. Infection persists but resistance remains low.");
+            }
+            logMessage(`Game Over. Doses Taken: ${dosesTaken}`);
+        }
+
+        function startGame() {
+            output.textContent = "Welcome to the Antibiotic Resistance Simulation!\n";
+            logMessage("Day 1: Sensitive bacteria: 100, Resistant bacteria: 10");
+            sensitiveBacteria = 100;
+            resistantBacteria = 10;
+            dosesTaken = 0;
+            daysPassed = 0;
+            gameOver = false;
+            logMessage("Enter 't' to take a dose, 's' to skip, or 'd' to double-dose.");
+        }
+
+        // Start game when page loads
+        startGame();
+    </script>
+</body>
+</html>
